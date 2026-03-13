@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TRPG 控制台低保真线框</title>
+  <style>
+    :root {
+      --line: #2e2e2e;
+      --bg: #f6f6f6;
+      --panel: #ffffff;
+      --muted: #6b6b6b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: #1e1e1e;
+    }
+    .app {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 16px;
+      display: grid;
+      gap: 16px;
+    }
+    .tag {
+      display: inline-block;
+      border: 1px dashed var(--line);
+      padding: 2px 8px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      background: #fafafa;
+    }
+    .screen {
+      border: 2px solid var(--line);
+      background: var(--panel);
+      padding: 12px;
+    }
+    .screen h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 6px;
+    }
+    .layout-gm {
+      display: grid;
+      grid-template-columns: 240px 1fr 320px;
+      grid-template-rows: minmax(360px, auto) 160px;
+      gap: 10px;
+    }
+    .layout-player {
+      display: grid;
+      grid-template-columns: 280px 1fr 280px;
+      min-height: 400px;
+      gap: 10px;
+    }
+    .box {
+      border: 1px solid var(--line);
+      padding: 10px;
+      min-height: 120px;
+      background: #fcfcfc;
+    }
+    .box h3 {
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+    .sub {
+      border: 1px dashed var(--line);
+      min-height: 64px;
+      padding: 8px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .muted { color: var(--muted); }
+    .full { grid-column: 1 / -1; }
+    .flow ul {
+      margin: 6px 0 0;
+      padding-left: 18px;
+      line-height: 1.6;
+      font-size: 13px;
+    }
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .pill {
+      border: 1px solid var(--line);
+      padding: 4px 10px;
+      font-size: 12px;
+      background: white;
+    }
+    .timeline {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 8px;
+      margin-top: 6px;
+      font-size: 13px;
+    }
+    .timeline .time {
+      border-right: 1px dashed var(--line);
+      padding-right: 8px;
+      color: var(--muted);
+    }
+    .relation {
+      min-height: 170px;
+      border: 1px dashed var(--line);
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="screen">
+      <span class="tag">Lo-fi / GM 主界面（四栏）</span>
+      <h2>GM Console</h2>
+      <div class="layout-gm">
+        <aside class="box">
+          <h3>左栏：章节进度 / 倒计时 / 威胁等级</h3>
+          <div class="sub">章节进度条（Act 1 → Act 4）</div>
+          <div class="sub">倒计时：00:27:14</div>
+          <div class="sub">威胁等级：III（逐步预警）</div>
+        </aside>
+
+        <section class="box flow">
+          <h3>中栏：场景叙事流 + 即时操作按钮</h3>
+          <div class="sub">
+            场景叙事流（按时间滚动）
+            <ul>
+              <li>玩家进入废弃剧院后台</li>
+              <li>触发异常音源（可感知）</li>
+              <li>NPC “守夜人”出现并打断调查</li>
+            </ul>
+          </div>
+          <div class="sub">
+            即时操作
+            <div class="pill-row">
+              <span class="pill">推进时间 +10min</span>
+              <span class="pill">触发突发事件</span>
+              <span class="pill">投放新线索</span>
+              <span class="pill">切换场景灯光</span>
+            </div>
+          </div>
+          <div class="sub muted">信息隔离提示：标记为「真相字段」的内容仅 GM 可见。</div>
+        </section>
+
+        <aside class="box">
+          <h3>右栏：关系网 + 关键 NPC Profile</h3>
+          <div class="relation">角色关系网（节点 + 连线 + 信任度）</div>
+          <div class="sub">NPC Profile：守夜人 / 动机 / 恐惧点 / 可触发事件</div>
+          <div class="sub">GM 真相字段：守夜人实际身份 = 旧案证人</div>
+          <div class="sub muted">玩家公开字段：守夜人 = 态度冷淡的管理员</div>
+        </aside>
+
+        <section class="box full">
+          <h3>底栏：一键生成</h3>
+          <div class="pill-row">
+            <span class="pill">生成证词</span>
+            <span class="pill">生成事件</span>
+            <span class="pill">生成人物图</span>
+            <span class="pill">生成线索图</span>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="screen">
+      <span class="tag">Lo-fi / 玩家界面（三栏）</span>
+      <h2>Player View</h2>
+      <div class="layout-player">
+        <aside class="box">
+          <h3>任务 / 线索面板</h3>
+          <div class="sub">主任务：找到失踪调查员</div>
+          <div class="sub">支线：确认剧院停电原因</div>
+          <div class="sub">线索列表：钥匙、票根、录音带</div>
+        </aside>
+
+        <section class="box">
+          <h3>当前场景与可行动作</h3>
+          <div class="sub">场景：剧院后台（灯光昏暗，回声异常）</div>
+          <div class="sub">
+            可行动作
+            <div class="pill-row">
+              <span class="pill">调查道具箱</span>
+              <span class="pill">询问 NPC</span>
+              <span class="pill">尝试潜行</span>
+              <span class="pill">短休恢复</span>
+            </div>
+          </div>
+          <div class="sub muted">仅展示公开字段，不展示 GM 真相字段。</div>
+        </section>
+
+        <aside class="box">
+          <h3>角色状态</h3>
+          <div class="sub">SAN：62 / 100</div>
+          <div class="sub">COR：3 / 10</div>
+          <div class="sub">ANCHOR：童年旋律（稳定）</div>
+          <div class="sub">资源：药剂×2 / 子弹×9 / 信号器×1</div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="screen">
+      <span class="tag">Lo-fi / 线索板可视化（时间轴 + 因果边）</span>
+      <h2>Clue Board</h2>
+      <div class="box">
+        <h3>证据关系图</h3>
+        <div class="timeline">
+          <div class="time">19:20</div><div>证据 A：后台门锁被撬开</div>
+          <div class="time">19:40</div><div>证据 B：录音带出现陌生男声（A → B）</div>
+          <div class="time">20:05</div><div>证据 C：守夜人不在岗（B → C）</div>
+          <div class="time">20:20</div><div>证据 D：停电触发（C → D，疑似人为）</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen">
+      <span class="tag">Lo-fi / 章节回放界面</span>
+      <h2>Chapter Replay</h2>
+      <div class="box">
+        <h3>自动汇总：关键选择 / 代价 / 后果</h3>
+        <div class="sub">关键选择：玩家选择“公开质询守夜人”而非“秘密跟踪”。</div>
+        <div class="sub">代价：团队信任 -1，潜行机会丢失，时间消耗 +15min。</div>
+        <div class="sub">后果：守夜人提高警惕，后续证词可信度下降，触发新敌对事件。</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,3 +1,8 @@
+# First_repository
+
+桌面端 AI 跑团系统架构设计文档见：
+
+- [docs/desktop-rpg-architecture.md](docs/desktop-rpg-architecture.md)
 # Profile-driven Narrative System
 
 该仓库实现了角色 Profile 的结构化建模、AI 生成约束校验、剧情驱动判定和章节差分日志。

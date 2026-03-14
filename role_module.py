@@ -3,7 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 from random import Random
-from typing import Dict, List, Sequence
+from typing import Dict, List, Literal, Sequence
+
+from src.profile_system import CharacterProfile, StoryEngine
 
 
 class RoleType(str, Enum):
@@ -40,6 +42,26 @@ class EventGraph:
     active_roles: List[Role] = field(default_factory=list)
 
 
+@dataclass(slots=True)
+class ChapterRoleStats:
+    chapter_id: str
+    persistent_count: int
+    dynamic_count: int
+    candidate_count: int
+
+
+@dataclass(slots=True)
+class ChapterSettlement:
+    chapter_id: str
+    promoted_candidates: List[Role] = field(default_factory=list)
+
+
+@dataclass(slots=True)
+class CampaignArchive:
+    candidate_persistent_roles: List[Role] = field(default_factory=list)
+    settlements: List[ChapterSettlement] = field(default_factory=list)
+
+
 persistent_characters: List[Role] = [
     Role("伊莲娜", "教会联络人", RoleType.PERSISTENT, "主线引导者", ["旧教区", "主城区"]),
     Role("洛克", "黑市中间人", RoleType.PERSISTENT, "资源调度者", ["下城区", "码头"]),
@@ -62,13 +84,57 @@ class CharacterManager:
     def __init__(self, rng: Random | None = None) -> None:
         self.rng = rng or Random()
         self._persistent_pool: List[Role] = list(persistent_characters)
+        self._profile_bindings: Dict[str, CharacterProfile] = {}
+        self._story_engine = StoryEngine()
 
     def load_chapter(self, context: ChapterContext) -> EventGraph:
         """章节装载流程：先注入常驻角色，再生成动态角色。"""
         graph = EventGraph(chapter_id=context.chapter_id)
-        graph.active_roles.extend(self.inject_persistent_roles(context))
-        graph.active_roles.extend(self.generate_dynamic_roles(context, graph.active_roles))
+        persistent_roles = self.inject_persistent_roles(context)
+        dynamic_roles = self.generate_dynamic_roles(context, persistent_roles)
+        graph.active_roles.extend(persistent_roles)
+        graph.active_roles.extend(dynamic_roles)
         return graph
+
+    def chapter_role_stats(self, graph: EventGraph, archive: CampaignArchive | None = None) -> ChapterRoleStats:
+        candidate_count = len(archive.candidate_persistent_roles) if archive else 0
+        return ChapterRoleStats(
+            chapter_id=graph.chapter_id,
+            persistent_count=sum(1 for role in graph.active_roles if role.role_type == RoleType.PERSISTENT),
+            dynamic_count=sum(1 for role in graph.active_roles if role.role_type == RoleType.GENERATED),
+            candidate_count=candidate_count,
+        )
+
+    def chapter_start_report(self, graph: EventGraph, archive: CampaignArchive | None = None) -> str:
+        stats = self.chapter_role_stats(graph, archive)
+        return (
+            f"[Chapter {stats.chapter_id}] 角色统计: "
+            f"常驻={stats.persistent_count}, 动态={stats.dynamic_count}, 候选={stats.candidate_count}"
+        )
+
+    def ui_relationship_panel(self, graph: EventGraph) -> List[Dict[str, str]]:
+        """关系网面板数据：包括常驻与动态角色。"""
+        return [
+            {
+                "name": role.name,
+                "title": role.title,
+                "role_type": role.role_type.value,
+                "slot": role.key_function_slot,
+                "relation_depth": str(role.relation_depth),
+            }
+            for role in graph.active_roles
+        ]
+
+    def ui_npc_list(self, graph: EventGraph) -> List[Dict[str, str]]:
+        """NPC 列表数据：包括常驻与动态角色。"""
+        return [
+            {
+                "name": role.name,
+                "title": role.title,
+                "role_type": role.role_type.value,
+            }
+            for role in graph.active_roles
+        ]
 
     def inject_persistent_roles(self, context: ChapterContext, force_count: int | None = None) -> List[Role]:
         count = force_count if force_count is not None else self.rng.randint(2, 4)
@@ -154,3 +220,31 @@ class CharacterManager:
                 )
             )
         return promoted
+
+    def settle_chapter(
+        self,
+        graph: EventGraph,
+        archive: CampaignArchive,
+        threshold: int = 70,
+    ) -> ChapterSettlement:
+        dynamic_roles = [role for role in graph.active_roles if role.role_type == RoleType.GENERATED]
+        promoted = self.promote_dynamic_to_candidates(dynamic_roles, threshold=threshold)
+        archive.candidate_persistent_roles.extend(promoted)
+        settlement = ChapterSettlement(chapter_id=graph.chapter_id, promoted_candidates=promoted)
+        archive.settlements.append(settlement)
+        return settlement
+
+    def bind_profile(self, role: Role, profile: CharacterProfile) -> None:
+        self._profile_bindings[role.name] = profile
+
+    def npc_dialogue_tone(self, role: Role) -> str:
+        profile = self._profile_bindings.get(role.name)
+        if profile is None:
+            return "中性"
+        return self._story_engine.dialogue_line(profile)
+
+    def npc_behavior_tendency(self, role: Role) -> Literal["betray", "assist", "neutral"]:
+        profile = self._profile_bindings.get(role.name)
+        if profile is None:
+            return "neutral"
+        return self._story_engine.betrayal_or_assist(profile)

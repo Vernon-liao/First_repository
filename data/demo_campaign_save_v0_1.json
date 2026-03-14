@@ -1,0 +1,64 @@
+{
+  "campaign_id": "demo-campaign-v0.1",
+  "chapter_id": "chapter-1",
+  "chapter_settled": true,
+  "events": [
+    "CAMPAIGN_CREATED",
+    "CHAPTER_1_STARTED",
+    "NARRATION_READY",
+    "IMAGE_READY",
+    "ROLL_RESOLVED",
+    "CHAPTER_1_SETTLED"
+  ],
+  "checkpoints": [
+    {
+      "reason": "campaign_created",
+      "payload": {
+        "chapter_id": "chapter-1",
+        "state": "bootstrapped"
+      }
+    },
+    {
+      "reason": "chapter_end",
+      "payload": {
+        "chapter_id": "chapter-1",
+        "summary": "第一章结算完成",
+        "events": [
+          "CAMPAIGN_CREATED",
+          "CHAPTER_1_STARTED",
+          "NARRATION_READY",
+          "IMAGE_READY",
+          "ROLL_RESOLVED"
+        ]
+      }
+    }
+  ],
+  "logs": [
+    {
+      "step": "chapter_step_1",
+      "source": "narrative",
+      "fallback_used": false,
+      "latency_ms": 0.0,
+      "detail": "narrative_model_ok"
+    },
+    {
+      "step": "chapter_step_2",
+      "source": "image",
+      "fallback_used": false,
+      "latency_ms": 0.0,
+      "detail": "image_model_ok"
+    },
+    {
+      "step": "chapter_settlement",
+      "source": "persistence",
+      "fallback_used": false,
+      "latency_ms": 0.0,
+      "detail": "save_ok"
+    }
+  ],
+  "performance": {
+    "first_screen_ms": 0.0,
+    "single_step_response_ms": 0.0
+  },
+  "version": "v0.1"
+}

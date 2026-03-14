@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from typing import Any, Dict, List, Literal
 import copy
 import json
@@ -335,3 +336,142 @@ class StoryEngine:
         if profile.favorability > 30 and profile.trust_to_party > 20:
             return "assist"
         return "neutral"
+
+
+@dataclass
+class ServiceCallResult:
+    """统一标注文本/图片调用来源与容灾元信息。"""
+
+    payload: Any
+    source: Literal["model", "fallback"]
+    timeout_s: float
+    retry_count: int
+    fallback_source: str | None = None
+
+
+def _call_with_timeout_retry_fallback(
+    provider: Any,
+    *,
+    timeout_s: float,
+    retry: int,
+    fallback_provider: Any,
+    fallback_source: str,
+) -> ServiceCallResult:
+    """Run provider with timeout + retry, then fallback to fallback_provider."""
+    for _ in range(retry + 1):
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            future = pool.submit(provider)
+            try:
+                payload = future.result(timeout=timeout_s)
+                return ServiceCallResult(
+                    payload=payload,
+                    source="model",
+                    timeout_s=timeout_s,
+                    retry_count=retry,
+                )
+            except (FuturesTimeoutError, Exception):
+                continue
+
+    fallback_payload = fallback_provider()
+    return ServiceCallResult(
+        payload=fallback_payload,
+        source="fallback",
+        timeout_s=timeout_s,
+        retry_count=retry,
+        fallback_source=fallback_source,
+    )
+
+
+class NarrativeService:
+    """场景叙事、分支建议、NPC 对话服务。"""
+
+    def __init__(self, model_provider: Any, fallback_provider: Any) -> None:
+        self.model_provider = model_provider
+        self.fallback_provider = fallback_provider
+
+    def scene_narrative(self, scene_context: str, timeout_s: float = 3.0, retry: int = 1) -> ServiceCallResult:
+        return _call_with_timeout_retry_fallback(
+            lambda: self.model_provider("scene_narrative", scene_context),
+            timeout_s=timeout_s,
+            retry=retry,
+            fallback_provider=lambda: self.fallback_provider("scene_narrative", scene_context),
+            fallback_source="local_scene_template",
+        )
+
+    def branch_suggestions(self, scene_context: str, timeout_s: float = 3.0, retry: int = 1) -> ServiceCallResult:
+        return _call_with_timeout_retry_fallback(
+            lambda: self.model_provider("branch_suggestions", scene_context),
+            timeout_s=timeout_s,
+            retry=retry,
+            fallback_provider=lambda: self.fallback_provider("branch_suggestions", scene_context),
+            fallback_source="rule_based_branches",
+        )
+
+    def npc_dialogue(self, profile: CharacterProfile, timeout_s: float = 3.0, retry: int = 1) -> ServiceCallResult:
+        prompt = f"NPC:{profile.name};speech:{profile.speech_style};motivation:{profile.motivation}"
+        return _call_with_timeout_retry_fallback(
+            lambda: self.model_provider("npc_dialogue", prompt),
+            timeout_s=timeout_s,
+            retry=retry,
+            fallback_provider=lambda: self.fallback_provider("npc_dialogue", prompt),
+            fallback_source="profile_story_engine",
+        )
+
+
+class ProfileRepository:
+    def __init__(self) -> None:
+        self._profiles: Dict[str, CharacterProfile] = {}
+
+    def upsert(self, profile: CharacterProfile) -> None:
+        self._profiles[profile.id] = profile
+
+    def get(self, profile_id: str) -> CharacterProfile | None:
+        return self._profiles.get(profile_id)
+
+
+class ProfileGenerationPipeline:
+    """profile_generation_prompt -> 模型输出 -> JSON 校验 -> Profile 入库。"""
+
+    def __init__(self, model_provider: Any, repository: ProfileRepository) -> None:
+        self.model_provider = model_provider
+        self.repository = repository
+
+    def generate_and_store(self, world_context: str) -> CharacterProfile:
+        prompt = profile_generation_prompt(world_context)
+        raw_output = self.model_provider(prompt)
+        profile = generate_profile_from_ai(raw_output)
+        self.repository.upsert(profile)
+        return profile
+
+
+class ImageService:
+    """生成场景图/NPC 立绘，支持 timeout + retry + 占位图回退。"""
+
+    def __init__(self, image_provider: Any) -> None:
+        self.image_provider = image_provider
+
+    def _placeholder(self, image_type: str) -> Dict[str, str]:
+        return {
+            "image_type": image_type,
+            "url": f"placeholder://{image_type}",
+            "description": "placeholder image",
+        }
+
+    def scene_image(self, scene_context: str, timeout_s: float = 5.0, retry: int = 1) -> ServiceCallResult:
+        return _call_with_timeout_retry_fallback(
+            lambda: self.image_provider("scene", scene_context),
+            timeout_s=timeout_s,
+            retry=retry,
+            fallback_provider=lambda: self._placeholder("scene"),
+            fallback_source="placeholder_scene_image",
+        )
+
+    def npc_portrait(self, profile: CharacterProfile, timeout_s: float = 5.0, retry: int = 1) -> ServiceCallResult:
+        prompt = f"portrait::{profile.portrait_seed}::{','.join(profile.style_tags)}"
+        return _call_with_timeout_retry_fallback(
+            lambda: self.image_provider("portrait", prompt),
+            timeout_s=timeout_s,
+            retry=retry,
+            fallback_provider=lambda: self._placeholder("portrait"),
+            fallback_source="placeholder_npc_portrait",
+        )

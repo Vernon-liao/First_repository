@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TRPG Lo-fi 预览入口</title>
+  <style>
+    body { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; margin: 24px; background: #f5f5f5; color: #1f1f1f; }
+    .box { max-width: 920px; margin: 0 auto; background: #fff; border: 2px solid #2e2e2e; padding: 16px; }
+    a { color: #2447d5; }
+    code { background: #f0f0f0; padding: 2px 6px; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>TRPG 低保真线框预览</h1>
+    <p>若评审系统提示“预览 not found”，请使用以下稳定入口：</p>
+    <ul>
+      <li>单页交互入口：<a href="./lofi.html">wireframes/lofi.html</a></li>
+      <li>四页直出预览：<a href="./lofi.html?view=all">wireframes/lofi.html?view=all</a></li>
+    </ul>
+    <p>支持内容：GM 控制台、玩家视图、线索板、章节回放，含字段可见性过滤与生成-审核-采纳流程。</p>
+    <p>如需本地启动：<code>python3 -m http.server 8000</code> 后访问上述路径。</p>
+  </div>
+</body>
+</html>

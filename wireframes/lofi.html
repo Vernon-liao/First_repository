@@ -7,171 +7,114 @@
   <style>
     :root {
       --line: #2e2e2e;
-      --bg: #f6f6f6;
-      --panel: #ffffff;
+      --bg: #f2f2f2;
+      --panel: #fff;
       --muted: #6b6b6b;
+      --accent: #2447d5;
+      --ok: #0f7b0f;
+      --warn: #a66a00;
     }
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
-      background: var(--bg);
-      color: #1e1e1e;
-    }
-    .app {
-      max-width: 1440px;
-      margin: 0 auto;
-      padding: 16px;
-      display: grid;
-      gap: 16px;
-    }
-    .tag {
-      display: inline-block;
-      border: 1px dashed var(--line);
-      padding: 2px 8px;
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 8px;
-      background: #fafafa;
-    }
-    .screen {
-      border: 2px solid var(--line);
-      background: var(--panel);
-      padding: 12px;
-    }
-    .screen h2 {
-      margin: 0 0 12px;
-      font-size: 18px;
-      border-bottom: 1px solid var(--line);
-      padding-bottom: 6px;
-    }
-    .layout-gm {
-      display: grid;
-      grid-template-columns: 240px 1fr 320px;
-      grid-template-rows: minmax(360px, auto) 160px;
-      gap: 10px;
-    }
-    .layout-player {
-      display: grid;
-      grid-template-columns: 280px 1fr 280px;
-      min-height: 400px;
-      gap: 10px;
-    }
-    .box {
-      border: 1px solid var(--line);
-      padding: 10px;
-      min-height: 120px;
-      background: #fcfcfc;
-    }
-    .box h3 {
-      margin: 0 0 8px;
-      font-size: 14px;
-    }
-    .sub {
-      border: 1px dashed var(--line);
-      min-height: 64px;
-      padding: 8px;
-      margin-bottom: 8px;
-      font-size: 13px;
-    }
+    body { margin: 0; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: #1e1e1e; }
+    .app { max-width: 1440px; margin: 0 auto; padding: 16px; display: grid; gap: 12px; }
+    .topbar, .screen { border: 2px solid var(--line); background: var(--panel); padding: 12px; }
+    .topbar { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .pill-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill, button { border: 1px solid var(--line); background: #fff; padding: 6px 10px; font-size: 12px; cursor: pointer; }
+    button.active { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .preview-all .screen { display: block; }
+    .tag { display: inline-block; border: 1px dashed var(--line); padding: 2px 8px; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+    h2 { margin: 0 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+    .layout-gm { display: grid; grid-template-columns: 240px 1fr 340px; grid-template-rows: minmax(360px, auto) auto; gap: 10px; }
+    .layout-player { display: grid; grid-template-columns: 280px 1fr 280px; min-height: 400px; gap: 10px; }
+    .box { border: 1px solid var(--line); background: #fcfcfc; padding: 10px; min-height: 100px; }
+    .sub { border: 1px dashed var(--line); padding: 8px; margin-bottom: 8px; font-size: 13px; }
     .muted { color: var(--muted); }
     .full { grid-column: 1 / -1; }
-    .flow ul {
-      margin: 6px 0 0;
-      padding-left: 18px;
-      line-height: 1.6;
-      font-size: 13px;
-    }
-    .pill-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 8px;
-    }
-    .pill {
-      border: 1px solid var(--line);
-      padding: 4px 10px;
-      font-size: 12px;
-      background: white;
-    }
-    .timeline {
-      display: grid;
-      grid-template-columns: 120px 1fr;
-      gap: 8px;
-      margin-top: 6px;
-      font-size: 13px;
-    }
-    .timeline .time {
-      border-right: 1px dashed var(--line);
-      padding-right: 8px;
-      color: var(--muted);
-    }
-    .relation {
-      min-height: 170px;
-      border: 1px dashed var(--line);
-      display: grid;
-      place-items: center;
-      font-size: 13px;
-      color: var(--muted);
-    }
+    .queue { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .queue h4 { margin: 0 0 8px; }
+    .card { border: 1px solid var(--line); background: #fff; padding: 8px; margin-bottom: 8px; font-size: 13px; }
+    .meta { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .status-ok { color: var(--ok); font-weight: 600; }
+    .status-warn { color: var(--warn); font-weight: 600; }
+    .relation-map { border: 1px dashed var(--line); padding: 8px; min-height: 160px; display: grid; gap: 6px; font-size: 13px; }
+    .timeline { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; }
+    .timeline-row { display: grid; grid-template-columns: 90px 1fr 150px; gap: 8px; font-size: 13px; padding: 3px 0; }
+    .time { color: var(--muted); border-right: 1px dashed var(--line); padding-right: 8px; }
+    .walkthrough li { margin-bottom: 8px; }
+    .path { font-weight: 600; }
   </style>
 </head>
 <body>
   <main class="app">
-    <section class="screen">
+    <section class="topbar">
+      <div class="pill-row" id="tabNav">
+        <button class="active" data-tab="gm">GM 控制台</button>
+        <button data-tab="all">全部预览</button>
+        <button data-tab="player">玩家视图</button>
+        <button data-tab="clue">线索板</button>
+        <button data-tab="replay">章节回放</button>
+      </div>
+      <div class="pill-row">
+        <span class="pill">字段可见性</span>
+        <button class="active" id="roleGm">GM（gm_only + public）</button>
+        <button id="rolePlayer">Player（public）</button>
+      </div>
+    </section>
+
+    <section class="screen active" id="screen-gm">
       <span class="tag">Lo-fi / GM 主界面（四栏）</span>
       <h2>GM Console</h2>
       <div class="layout-gm">
         <aside class="box">
           <h3>左栏：章节进度 / 倒计时 / 威胁等级</h3>
-          <div class="sub">章节进度条（Act 1 → Act 4）</div>
+          <div class="sub">章节进度条（Act 1 → Act 4）：Act 2 / 4</div>
           <div class="sub">倒计时：00:27:14</div>
           <div class="sub">威胁等级：III（逐步预警）</div>
         </aside>
 
-        <section class="box flow">
-          <h3>中栏：场景叙事流 + 即时操作按钮</h3>
+        <section class="box">
+          <h3>中栏：场景叙事流 + 即时操作</h3>
+          <div class="sub" id="narrativeList"></div>
           <div class="sub">
-            场景叙事流（按时间滚动）
-            <ul>
-              <li>玩家进入废弃剧院后台</li>
-              <li>触发异常音源（可感知）</li>
-              <li>NPC “守夜人”出现并打断调查</li>
-            </ul>
-          </div>
-          <div class="sub">
-            即时操作
             <div class="pill-row">
-              <span class="pill">推进时间 +10min</span>
-              <span class="pill">触发突发事件</span>
-              <span class="pill">投放新线索</span>
-              <span class="pill">切换场景灯光</span>
+              <button id="generateBtn">生成剧情建议</button>
+              <button id="reviewBtn">审核通过首条</button>
+              <button id="adoptBtn">采纳首条已审核</button>
             </div>
+            <div class="meta">工作流：生成 → 审核 → 采纳（采纳后进入正式剧情并同步线索板/回放）</div>
           </div>
-          <div class="sub muted">信息隔离提示：标记为「真相字段」的内容仅 GM 可见。</div>
+          <div class="sub muted">前端会根据字段 visibility 自动过滤：gm_only / public。</div>
         </section>
 
         <aside class="box">
-          <h3>右栏：关系网 + 关键 NPC Profile</h3>
-          <div class="relation">角色关系网（节点 + 连线 + 信任度）</div>
-          <div class="sub">NPC Profile：守夜人 / 动机 / 恐惧点 / 可触发事件</div>
-          <div class="sub">GM 真相字段：守夜人实际身份 = 旧案证人</div>
-          <div class="sub muted">玩家公开字段：守夜人 = 态度冷淡的管理员</div>
+          <h3>右栏：关系网 + NPC Profile</h3>
+          <div class="relation-map" id="npcProfile"></div>
         </aside>
 
         <section class="box full">
-          <h3>底栏：一键生成</h3>
-          <div class="pill-row">
-            <span class="pill">生成证词</span>
-            <span class="pill">生成事件</span>
-            <span class="pill">生成人物图</span>
-            <span class="pill">生成线索图</span>
+          <h3>底栏：生成-审核-采纳区</h3>
+          <div class="queue">
+            <div>
+              <h4>待审核（AI 生成）</h4>
+              <div id="queueGenerated"></div>
+            </div>
+            <div>
+              <h4>待采纳（审核通过）</h4>
+              <div id="queueReviewed"></div>
+            </div>
+            <div>
+              <h4>正式剧情（已采纳）</h4>
+              <div id="queueAdopted"></div>
+            </div>
           </div>
         </section>
       </div>
     </section>
 
-    <section class="screen">
+    <section class="screen" id="screen-player">
       <span class="tag">Lo-fi / 玩家界面（三栏）</span>
       <h2>Player View</h2>
       <div class="layout-player">
@@ -179,24 +122,14 @@
           <h3>任务 / 线索面板</h3>
           <div class="sub">主任务：找到失踪调查员</div>
           <div class="sub">支线：确认剧院停电原因</div>
-          <div class="sub">线索列表：钥匙、票根、录音带</div>
+          <div class="sub" id="playerClues"></div>
         </aside>
-
         <section class="box">
           <h3>当前场景与可行动作</h3>
           <div class="sub">场景：剧院后台（灯光昏暗，回声异常）</div>
-          <div class="sub">
-            可行动作
-            <div class="pill-row">
-              <span class="pill">调查道具箱</span>
-              <span class="pill">询问 NPC</span>
-              <span class="pill">尝试潜行</span>
-              <span class="pill">短休恢复</span>
-            </div>
-          </div>
-          <div class="sub muted">仅展示公开字段，不展示 GM 真相字段。</div>
+          <div class="sub">可行动作：调查道具箱 / 询问 NPC / 尝试潜行 / 短休恢复</div>
+          <div class="sub muted">当前视角仅渲染 public 字段。</div>
         </section>
-
         <aside class="box">
           <h3>角色状态</h3>
           <div class="sub">SAN：62 / 100</div>
@@ -207,30 +140,194 @@
       </div>
     </section>
 
-    <section class="screen">
-      <span class="tag">Lo-fi / 线索板可视化（时间轴 + 因果边）</span>
+    <section class="screen" id="screen-clue">
+      <span class="tag">Lo-fi / 线索板（因果连线 + 时间轴）</span>
       <h2>Clue Board</h2>
       <div class="box">
-        <h3>证据关系图</h3>
-        <div class="timeline">
-          <div class="time">19:20</div><div>证据 A：后台门锁被撬开</div>
-          <div class="time">19:40</div><div>证据 B：录音带出现陌生男声（A → B）</div>
-          <div class="time">20:05</div><div>证据 C：守夜人不在岗（B → C）</div>
-          <div class="time">20:20</div><div>证据 D：停电触发（C → D，疑似人为）</div>
-        </div>
+        <h3>因果关系图（A → B）</h3>
+        <div class="relation-map" id="causalMap"></div>
+        <div class="timeline" id="timeline"></div>
       </div>
     </section>
 
-    <section class="screen">
-      <span class="tag">Lo-fi / 章节回放界面</span>
+    <section class="screen" id="screen-replay">
+      <span class="tag">Lo-fi / 章节回放（自动拉取关键事件）</span>
       <h2>Chapter Replay</h2>
       <div class="box">
-        <h3>自动汇总：关键选择 / 代价 / 后果</h3>
-        <div class="sub">关键选择：玩家选择“公开质询守夜人”而非“秘密跟踪”。</div>
-        <div class="sub">代价：团队信任 -1，潜行机会丢失，时间消耗 +15min。</div>
-        <div class="sub">后果：守夜人提高警惕，后续证词可信度下降，触发新敌对事件。</div>
+        <h3>关键事件摘要（来自正式剧情）</h3>
+        <div id="replayEvents"></div>
+      </div>
+      <div class="box">
+        <h3>可用性走查（5 条关键路径）</h3>
+        <ul class="walkthrough">
+          <li><span class="path">开局：</span>GM 在控制台点击“生成剧情建议”→ 审核通过 → 采纳后玩家看到公开线索。</li>
+          <li><span class="path">调查：</span>玩家在玩家视图读取线索并选择调查，GM 侧关系网同步新增证据节点。</li>
+          <li><span class="path">判定：</span>GM 采纳“判定结果”事件，章节回放出现“成功/失败+代价”。</li>
+          <li><span class="path">异变：</span>GM 采纳“异变触发”事件，威胁等级提升并在线索板形成新因果边。</li>
+          <li><span class="path">结算：</span>章节结束时回放自动汇总关键选择、代价、后果，供 GM 复盘。</li>
+        </ul>
       </div>
     </section>
   </main>
+
+  <script>
+    const state = {
+      role: 'gm',
+      narrative: [
+        { text: '玩家进入废弃剧院后台', visibility: 'public' },
+        { text: '触发异常音源（可感知）', visibility: 'public' },
+        { text: '守夜人真实身份接近暴露', visibility: 'gm_only' }
+      ],
+      npcFields: [
+        { label: '公开身份', value: '态度冷淡的管理员', visibility: 'public' },
+        { label: '动机', value: '掩盖旧案关键证词', visibility: 'gm_only' },
+        { label: '恐惧点', value: '录音带中的男声', visibility: 'gm_only' },
+        { label: '可触发事件', value: '停电后紧急锁门', visibility: 'public' }
+      ],
+      generated: [
+        { id: 'g1', title: 'AI建议：守夜人突然停电', visibility: 'public', type: 'anomaly', time: '20:20', cause: '证据 C', effect: '证据 D' },
+        { id: 'g2', title: 'AI建议：发现密室账本', visibility: 'gm_only', type: 'investigation', time: '20:28', cause: '证据 D', effect: '证据 E' }
+      ],
+      reviewed: [],
+      adopted: [
+        { id: 'a0', title: '开场：后台门锁被撬开', visibility: 'public', type: 'opening', time: '19:20', cause: '初始事件', effect: '证据 A' },
+        { id: 'a1', title: '录音带出现陌生男声', visibility: 'public', type: 'investigation', time: '19:40', cause: '证据 A', effect: '证据 B' },
+        { id: 'a2', title: '守夜人不在岗', visibility: 'public', type: 'judgement', time: '20:05', cause: '证据 B', effect: '证据 C' }
+      ]
+    };
+
+    const visibleForRole = (item) => item.visibility === 'public' || state.role === 'gm';
+
+    function renderNarrative() {
+      const html = state.narrative
+        .filter(visibleForRole)
+        .map((n) => `<li>${n.text} <span class="meta">[${n.visibility}]</span></li>`)
+        .join('');
+      document.getElementById('narrativeList').innerHTML = `场景叙事流<ul>${html}</ul>`;
+    }
+
+    function renderNpc() {
+      document.getElementById('npcProfile').innerHTML = state.npcFields
+        .filter(visibleForRole)
+        .map((f) => `<div>${f.label}：${f.value} <span class="meta">[${f.visibility}]</span></div>`)
+        .join('');
+    }
+
+    function renderQueueBlock(id, list, className) {
+      const root = document.getElementById(id);
+      const filtered = list.filter(visibleForRole);
+      if (!filtered.length) {
+        root.innerHTML = '<div class="card muted">暂无内容</div>';
+        return;
+      }
+      root.innerHTML = filtered.map((item) => `
+        <div class="card">
+          <div>${item.title}</div>
+          <div class="meta ${className || ''}">[${item.visibility}] ${item.time || ''}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderPlayerClues() {
+      const clues = state.adopted
+        .filter((e) => e.visibility === 'public')
+        .map((e) => e.effect)
+        .filter(Boolean)
+        .join('、');
+      document.getElementById('playerClues').textContent = `线索列表：${clues || '暂无公开线索'}`;
+    }
+
+    function renderClueBoard() {
+      const events = state.adopted.filter(visibleForRole);
+      document.getElementById('causalMap').innerHTML = events
+        .map((e) => `<div>${e.cause} → ${e.effect}（${e.title}）</div>`)
+        .join('');
+      document.getElementById('timeline').innerHTML = '<h3>时间轴</h3>' + events
+        .map((e) => `<div class="timeline-row"><div class="time">${e.time}</div><div>${e.title}</div><div>${e.cause} → ${e.effect}</div></div>`)
+        .join('');
+    }
+
+    function renderReplay() {
+      const keys = state.adopted.filter(visibleForRole).slice(-4);
+      if (!keys.length) {
+        document.getElementById('replayEvents').innerHTML = '<div class="sub muted">暂无关键事件</div>';
+        return;
+      }
+      document.getElementById('replayEvents').innerHTML = keys.map((e) => {
+        const impact = e.type === 'anomaly' ? '威胁等级上升，触发异变链。' : (e.type === 'judgement' ? '进行判定并结算代价。' : '推动调查进度。');
+        return `<div class="sub"><strong>${e.title}</strong><br/>时间：${e.time}<br/>后果：${impact}</div>`;
+      }).join('');
+    }
+
+    function renderAll() {
+      renderNarrative();
+      renderNpc();
+      renderQueueBlock('queueGenerated', state.generated, 'status-warn');
+      renderQueueBlock('queueReviewed', state.reviewed, 'status-ok');
+      renderQueueBlock('queueAdopted', state.adopted, 'status-ok');
+      renderPlayerClues();
+      renderClueBoard();
+      renderReplay();
+    }
+
+    document.getElementById('generateBtn').addEventListener('click', () => {
+      const next = {
+        id: `g${Date.now()}`,
+        title: 'AI建议：判定失败导致异响扩散',
+        visibility: 'public',
+        type: 'judgement',
+        time: '20:35',
+        cause: '证据 E',
+        effect: '证据 F'
+      };
+      state.generated.unshift(next);
+      renderAll();
+    });
+
+    document.getElementById('reviewBtn').addEventListener('click', () => {
+      if (!state.generated.length) return;
+      state.reviewed.unshift(state.generated.shift());
+      renderAll();
+    });
+
+    document.getElementById('adoptBtn').addEventListener('click', () => {
+      if (!state.reviewed.length) return;
+      const adopted = state.reviewed.shift();
+      state.adopted.push(adopted);
+      state.narrative.push({ text: `正式剧情更新：${adopted.title}`, visibility: adopted.visibility });
+      renderAll();
+    });
+
+    document.getElementById('roleGm').addEventListener('click', () => setRole('gm'));
+    document.getElementById('rolePlayer').addEventListener('click', () => setRole('player'));
+
+    function setRole(role) {
+      state.role = role;
+      document.getElementById('roleGm').classList.toggle('active', role === 'gm');
+      document.getElementById('rolePlayer').classList.toggle('active', role === 'player');
+      renderAll();
+    }
+
+    document.getElementById('tabNav').addEventListener('click', (event) => {
+      if (event.target.tagName !== 'BUTTON') return;
+      const tab = event.target.dataset.tab;
+      document.querySelectorAll('#tabNav button').forEach((b) => b.classList.toggle('active', b === event.target));
+      if (tab === 'all') {
+        document.body.classList.add('preview-all');
+        return;
+      }
+      document.body.classList.remove('preview-all');
+      document.querySelectorAll('.screen').forEach((s) => s.classList.remove('active'));
+      document.getElementById(`screen-${tab}`).classList.add('active');
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('view') === 'all') {
+      document.body.classList.add('preview-all');
+      document.querySelectorAll('#tabNav button').forEach((b) => b.classList.toggle('active', b.dataset.tab === 'all'));
+    }
+
+    renderAll();
+  </script>
 </body>
 </html>
